@@ -8,6 +8,11 @@
 #   Author: Janne Haapsaari <haaja@iki.fi>
 #
 
+import platform
+import getpass
+import subprocess
+import sys
+
 
 def get_distro_logo(distro='default'):
     """ Function returns ascii representation for distro logo.
@@ -190,11 +195,76 @@ def get_uptime():
     return uptime
 
 
+def get_loadavg():
+    """Returns load averages
+
+    Load averages are read from /proc/loadavg file.
+    """
+
+    try:
+        file = open('/proc/loadavg', 'r')
+        loads = file.readline().split()
+        file.close()
+    except IOError:
+        return 'Unable to open file: /proc/loadavg'
+
+    return str(loads[0] + ', ' + loads[1] + ', ' + loads[2])
+
+
+def get_kernel_version():
+    """Returns kernel version string."""
+
+    return platform.uname()[2]
+
+
+def get_hostname():
+    """Returns hostname."""
+
+    return platform.node()
+
+
+def get_distribution_info():
+    """Returns distribution info."""
+
+    distro = platform.linux_distribution()
+    result = distro[0] + ' ' + distro[1] + ' ' + distro[2]
+
+    return result
+
+
+def get_distribution_name():
+    """Returns distribution name."""
+
+    return platform.linux_distribution()[0].lower()
+
+
+def get_username():
+    """Returns the login name of the user."""
+    return getpass.getuser()
+
+
+def get_resolution():
+
+    try:
+        output = subprocess.check_output(['xrandr'])
+    except:
+        return "Unable to execute xrandr: " + str(sys.exc_info())
+
+    output = output.split('\n')
+    for line in output:
+        if "*" in line:
+            line = line.strip()
+            line = line.split()[0]
+            return line
+
+    return "Unable to get screen resolution using xrandr."
+
 if __name__ == '__main__':
-    print(get_distro_logo('debian'))
-    print(get_distro_logo('fedora'))
-    print(get_distro_logo('ubuntu'))
-    print(get_distro_logo('mint'))
-    print(get_distro_logo('rommikola'))
-    print(get_distro_logo())
+    print(get_distro_logo(get_distribution_name()))
     print("Uptime: " + get_uptime())
+    print("Kernel: " + get_kernel_version())
+    print("Hostname: " + get_hostname())
+    print("Distribution: " + get_distribution_info())
+    print("User: " + get_username())
+    print("Loadavg: " + get_loadavg())
+    print("Resolution: " + get_resolution())
