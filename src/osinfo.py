@@ -177,13 +177,15 @@ def get_uptime():
     uptime = ''
 
     if days > 0:
-        uptime += str(days) + ' days, '
+        uptime += str(days) + ' ' + (days == 1 and 'day, ' or 'days, ')
     if hours > 0:
-        uptime += str(hours) + ' hours, '
+        uptime += str(hours) + ' ' + (hours == 1 and 'hour, ' or 'hours, ')
     if minutes > 0:
-        uptime += str(minutes) + ' minutes, '
+        uptime += str(minutes) + ' ' \
+            + (minutes == 1 and 'minute, ' or 'minutes, ')
     if seconds > 0:
-        uptime += str(seconds) + ' seconds'
+        uptime += str(seconds) + ' ' \
+            + (seconds == 1 and 'second, ' or 'seconds')
 
     return uptime
 
