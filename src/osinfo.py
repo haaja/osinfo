@@ -297,7 +297,6 @@ def get_number_of_installed_packages():
     """
 
     distro = get_distribution_name()
-    output = ''
 
     if distro == 'fedora' or 'suse' or 'centos' or 'redhat':
         try:
@@ -378,7 +377,6 @@ def get_de_version(de):
 
     command = str(de) + ' --version'
     command = command.split()
-    output = 'Unable to find DE version.'
 
     try:
         output = subprocess.check_output(command)
