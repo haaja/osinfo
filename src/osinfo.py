@@ -254,6 +254,7 @@ def get_distribution_name():
 
 def get_username():
     """Returns the login name of the user."""
+
     return getpass.getuser()
 
 
@@ -265,7 +266,7 @@ def get_resolution():
 
     try:
         output = subprocess.check_output(['xrandr'])
-    except:
+    except subprocess.CalledProcessError:
         return "Unable to execute xrandr: " + str(sys.exc_info())
 
     output = output.split('\n')
@@ -301,17 +302,17 @@ def get_number_of_installed_packages():
     if distro == 'fedora' or 'suse' or 'centos' or 'redhat':
         try:
             output = subprocess.check_output(['rpm', '-qa'])
-        except:
+        except subprocess.CalledProcessError:
             return 'Unable to execute rpm: ' + str(sys.exc_info())
     elif distro == 'debian' or 'ubuntu' or 'mint':
         try:
             output = subprocess.check_output(['dpkg', '-l'])
-        except:
+        except subprocess.CalledProcessError:
             return 'Unable to execute dpkg: ' + str(sys.exc_info())
     elif distro == 'arch':
         try:
             output = subprocess.check_output(['pacman', '-Qqu'])
-        except:
+        except subprocess.CalledProcessError:
             return 'Unable to execute pacman: ' + str(sys.exc_info())
     else:
         return 'Unable to count packages'
@@ -361,8 +362,6 @@ def get_desktop_environment():
     except subprocess.CalledProcessError as e:
         return "Received CalledProcessError when executing ps -e: " \
             + e.output
-    except:
-        return 'Unable to execute ps -e: ' + str(sys.exc_info())
 
     output = output.split('\n')
 
@@ -388,8 +387,6 @@ def get_de_version(de):
         # instead of 0
         output = e.output
         pass
-    except:
-        return 'Unable to execute ' + str(command) + ': ' + sys.exc_info()
 
     return str(output.split()[1])
 
