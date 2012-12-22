@@ -374,6 +374,7 @@ def get_desktop_environment():
 
 
 def get_de_version(de):
+    """Returns the desktop environment version string."""
 
     command = str(de) + ' --version'
     command = command.split()
@@ -381,8 +382,8 @@ def get_de_version(de):
     try:
         output = subprocess.check_output(command)
     except subprocess.CalledProcessError as e:
-        # For some strange reason at least gnome-session --version returns 1
-        # instead of 0
+        # gnome-session --version returns 1 instead of 0. The bug is fixed in
+        # GNOME 3.8 but here's a hack to make this work with earlier versions.
         output = e.output
         pass
 
