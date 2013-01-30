@@ -349,7 +349,7 @@ def get_desktop_version(desktop):
         output = subprocess.check_output(command)
     except subprocess.CalledProcessError as e:
         # gnome-session --version returns 1 instead of 0. The bug is fixed in
-        # GNOME 3.8 but here's a hack to make this work with earlier versions.
+        # GNOME 3.7.3 but here's a hack to make this work with earlier versions.
         output = e.output
         pass
 
