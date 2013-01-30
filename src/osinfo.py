@@ -12,6 +12,7 @@ import platform
 import getpass
 import subprocess
 import sys
+import os
 
 
 def get_distro_logo(distro='default'):
@@ -325,58 +326,23 @@ def get_number_of_installed_packages():
 
 
 def get_desktop_environment():
-    desktops = {
-        'gnome-session': 'GNOME',
-        'ksmserver': 'KDE',
-        'xfconfd': 'Xfce',
-        'cinnamon': 'Cinnamon',
-        'unity': 'Unity'
-    }
 
-    win_managers = {
-        'awesome': 'Awesome',
-        'beryl': 'Beryl',
-        'blackbox': 'Blackbox',
-        'compiz': 'Compiz',
-        'dwm': 'DWM',
-        'englightenment': 'Enlightenment',
-        'fluxbox': 'Fluxbox',
-        'fvwm': 'FVWM',
-        'icewm': 'IceWM',
-        'kwin': 'KWin',
-        'metacity': 'Metacity',
-        'musca': 'Musca',
-        'openbox': 'Openbox',
-        'pekwm': 'PekWM',
-        'ratpoison': 'ratpoison',
-        'scrotwm': 'ScrotWM',
-        'wmaker': 'Window Maker',
-        'wmii': 'wmii',
-        'xfwm4': 'Xfwm',
-        'xmonad': 'xmonad'
-    }
-
-    try:
-        output = subprocess.check_output(['ps', '-e'])
-    except subprocess.CalledProcessError as e:
-        return "Received CalledProcessError when executing ps -e: " \
-            + e.output
-
-    output = output.split('\n')
-
-    for line in output:
-        de_process = line.split()[3:]
-        if de_process[0] in desktops:
-            desktop_environment = desktops[de_process[0]]
-            return desktop_environment
-
-    return "Unable to get desktop environment"
+    desktop = os.environ.get('XDG_CURRENT_DESKTOP')
+    if desktop == None:
+        raise OsInfoException("Unable to get desktop environment")
+    else:
+        return desktop
 
 
-def get_de_version(de):
+def get_desktop_version(desktop):
     """Returns the desktop environment version string."""
 
-    command = str(de) + ' --version'
+    desktop = desktop.lower()
+
+    if desktop == 'gnome':
+        desktop == 'gnome-session'
+
+    command = str(desktop) + ' --version'
     command = command.split()
 
     try:
@@ -389,15 +355,23 @@ def get_de_version(de):
 
     return str(output.split()[1])
 
+class OsInfoException(Exception):
+    pass
 
 if __name__ == '__main__':
-    print(get_distro_logo(get_distribution_name()))
-    print("Uptime: " + get_uptime())
-    print("Kernel: " + get_kernel_version())
-    print("Hostname: " + get_hostname())
-    print("Distribution: " + get_distribution_info())
-    print("User: " + get_username())
-    print("Loadavg: " + get_loadavg())
-    print("Resolution: " + get_resolution())
-    # print("Installed packages: " + get_number_of_installed_packages())
-    print("Desktop: " + get_desktop_environment() + " " + get_de_version('gnome-session'))
+
+    try:
+        print(get_distro_logo(get_distribution_name()))
+        print("Uptime: " + get_uptime())
+        print("Kernel: " + get_kernel_version())
+        print("Hostname: " + get_hostname())
+        print("Distribution: " + get_distribution_info())
+        print("User: " + get_username())
+        print("Loadavg: " + get_loadavg())
+        print("Resolution: " + get_resolution())
+        # print("Installed packages: " + get_number_of_installed_packages())
+        desktop = get_desktop_environment()
+        print("Desktop: " + get_desktop_environment() + " "
+              + get_desktop_version(desktop))
+    except OsInfoException as e:
+        print e
