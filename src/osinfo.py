@@ -242,7 +242,14 @@ def get_distribution_info():
     """Returns distribution info."""
 
     distro = platform.linux_distribution()
-    result = distro[0] + ' ' + distro[1] + ' ' + distro[2]
+    if distro == ('', '',''):
+        try:
+            result = subprocess.check_output(['lsb_release', '-ds'])
+            result = result.strip("\n\"")
+        except subprocess.CalledProcessError:
+            return 'Unable to execute lsb_release: ' + str(sys.exc_info())
+    else:
+        result = distro[0] + ' ' + distro[1] + ' ' + distro[2]
 
     return result
 
@@ -250,7 +257,15 @@ def get_distribution_info():
 def get_distribution_name():
     """Returns distribution name."""
 
-    return platform.linux_distribution()[0].lower()
+    distro = platform.linux_distribution()[0]
+    if len(distro) == 0:
+        try:
+            distro = subprocess.check_output(['lsb_release', '-is'])
+            distro = distro.strip()
+        except subprocess.CalledProcessError:
+            return 'Unable to execute lsb_release: ' + str(sys.exc_info())
+
+    return distro.lower()
 
 
 def get_username():
@@ -299,19 +314,20 @@ def get_number_of_installed_packages():
 
     distro = get_distribution_name()
 
-    if distro == 'fedora' or 'suse' or 'centos' or 'redhat':
+    if distro == 'fedora' or distro == 'suse' \
+       or distro == 'centos' or distro == 'redhat':
         try:
             output = subprocess.check_output(['rpm', '-qa'])
         except subprocess.CalledProcessError:
             return 'Unable to execute rpm: ' + str(sys.exc_info())
-    elif distro == 'debian' or 'ubuntu' or 'mint':
+    elif distro == 'debian' or distro == 'ubuntu' or distro == 'mint':
         try:
             output = subprocess.check_output(['dpkg', '-l'])
         except subprocess.CalledProcessError:
             return 'Unable to execute dpkg: ' + str(sys.exc_info())
     elif distro == 'arch':
         try:
-            output = subprocess.check_output(['pacman', '-Qqu'])
+            output = subprocess.check_output(['pacman', '-Q'])
         except subprocess.CalledProcessError:
             return 'Unable to execute pacman: ' + str(sys.exc_info())
     else:
@@ -319,19 +335,18 @@ def get_number_of_installed_packages():
 
     output = output.split('\n')
 
-    for i, line in enumerate(output):
-        pass
-
-    return str(i)
+    return str(len(output))
 
 
 def get_desktop_environment():
 
     desktop = os.environ.get('XDG_CURRENT_DESKTOP')
     if desktop == None:
-        raise OsInfoException("Unable to get desktop environment")
-    else:
-        return desktop
+        desktop = os.environ.get('DESKTOP_SESSION')
+        if desktop == None:
+            raise OsInfoException("Unable to get desktop environment")
+
+    return desktop
 
 
 def get_desktop_version(desktop):
@@ -340,7 +355,7 @@ def get_desktop_version(desktop):
     desktop = desktop.lower()
 
     if desktop == 'gnome':
-        desktop == 'gnome-session'
+        desktop = 'gnome-session'
 
     command = str(desktop) + ' --version'
     command = command.split()
@@ -353,7 +368,9 @@ def get_desktop_version(desktop):
         output = e.output
         pass
 
-    return str(output.split()[1])
+    result = output.split()[1]
+
+    return result
 
 class OsInfoException(Exception):
     pass
@@ -369,7 +386,7 @@ if __name__ == '__main__':
         print("User: " + get_username())
         print("Loadavg: " + get_loadavg())
         print("Resolution: " + get_resolution())
-        # print("Installed packages: " + get_number_of_installed_packages())
+        print("Installed packages: " + get_number_of_installed_packages())
         desktop = get_desktop_environment()
         print("Desktop: " + get_desktop_environment() + " "
               + get_desktop_version(desktop))
