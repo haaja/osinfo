@@ -182,7 +182,7 @@ class OSInfo():
             data = file.read().split()
             file.close()
         except IOError:
-            return 'Unable to open file: /proc/uptime'
+            raise OSInfoError('Unable to open file: /proc/uptime')
 
         total_seconds = float(data[0])
 
@@ -223,7 +223,7 @@ class OSInfo():
             loads = file.readline().split()
             file.close()
         except IOError:
-            return 'Unable to open file: /proc/loadavg'
+            raise OSInfoError('Unable to open file: /proc/loadavg')
 
         return str(loads[0] + ', ' + loads[1] + ', ' + loads[2])
 
@@ -246,7 +246,8 @@ class OSInfo():
                 result = subprocess.check_output(['lsb_release', '-ds'])
                 result = result.strip("\n\"")
             except subprocess.CalledProcessError:
-                return 'Unable to execute lsb_release: ' + str(sys.exc_info())
+                raise OSInfoError('Unable to execute lsb_release: ' +
+                                  str(sys.exc_info()))
         else:
             result = distro[0] + ' ' + distro[1] + ' ' + distro[2]
 
@@ -261,7 +262,8 @@ class OSInfo():
                 distro = subprocess.check_output(['lsb_release', '-is'])
                 distro = distro.strip()
             except subprocess.CalledProcessError:
-                return 'Unable to execute lsb_release: ' + str(sys.exc_info())
+                raise OSInfoError('Unable to execute lsb_release: ' +
+                                  str(sys.exc_info()))
 
         return distro.lower()
 
@@ -279,7 +281,8 @@ class OSInfo():
         try:
             output = subprocess.check_output(['xrandr'])
         except subprocess.CalledProcessError:
-            return "Unable to execute xrandr: " + str(sys.exc_info())
+            raise OSInfoError('Unable to execute xrandr: ' +
+                              str(sys.exc_info()))
 
         output = output.decode('utf-8')
         output = output.split('\n')
@@ -315,17 +318,20 @@ class OSInfo():
             try:
                 output = subprocess.check_output(['rpm', '-qa'])
             except subprocess.CalledProcessError:
-                return 'Unable to execute rpm: ' + str(sys.exc_info())
+                raise OSInfoError('Unable to execute rpm: ' +
+                                  str(sys.exc_info()))
         elif distro == 'debian' or distro == 'ubuntu' or distro == 'mint':
             try:
                 output = subprocess.check_output(['dpkg', '-l'])
             except subprocess.CalledProcessError:
-                return 'Unable to execute dpkg: ' + str(sys.exc_info())
+                raise OSInfoError('Unable to execute dpkg: ' +
+                                  str(sys.exc_info()))
         elif distro == 'arch':
             try:
                 output = subprocess.check_output(['pacman', '-Q'])
             except subprocess.CalledProcessError:
-                return 'Unable to execute pacman: ' + str(sys.exc_info())
+                raise OSInfoError('Unable to execute pacman: ' +
+                                  str(sys.exc_info()))
         else:
             return 'Unable to count packages'
 
@@ -340,7 +346,7 @@ class OSInfo():
         if desktop is None:
             desktop = os.environ.get('DESKTOP_SESSION')
             if desktop is None:
-                raise OsInfoError("Unable to get desktop environment")
+                raise OSInfoError("Unable to get desktop environment")
 
         return desktop
 
@@ -384,7 +390,7 @@ class OSInfo():
               + self.get_desktop_version(desktop))
 
 
-class OsInfoError(Exception):
+class OSInfoError(Exception):
     pass
 
 if __name__ == '__main__':
@@ -392,5 +398,5 @@ if __name__ == '__main__':
     try:
         osinfo = OSInfo()
         osinfo.print_info()
-    except OsInfoError as e:
+    except OSInfoError as e:
         raise
