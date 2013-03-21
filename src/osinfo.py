@@ -329,6 +329,7 @@ class OSInfo():
         else:
             return 'Unable to count packages'
 
+        output = output.decode('utf-8')
         output = output.split('\n')
 
         return str(len(output))
@@ -363,6 +364,7 @@ class OSInfo():
             output = e.output
             pass
 
+        output = output.decode('utf-8')
         result = output.split()[1]
 
         return result
