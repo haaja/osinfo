@@ -367,10 +367,11 @@ class OSInfo():
         desktop = desktop.lower()
 
         if desktop == 'gnome':
-            desktop = 'gnome-session'
+            desktop = 'gnome-session --version'
+        elif desktop == 'kde':
+            desktop = 'kde4-config --version'
 
-        command = str(desktop) + ' --version'
-        command = command.split()
+        command = desktop.split()
 
         try:
             output = subprocess.check_output(command)
@@ -382,9 +383,11 @@ class OSInfo():
             pass
 
         output = output.decode('utf-8')
-        result = output.split()[1]
-
-        return result
+        result = output.split()
+        if len(result) > 2:
+            return result[5]
+        else:
+            return result[1]
 
     def print_info(self):
         logo = self.get_distro_logo(self.get_distribution_name())
