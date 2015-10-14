@@ -368,6 +368,8 @@ def get_desktop_version(desktop):
         desktop = 'gnome-shell --version'
     elif desktop == 'kde':
         desktop = 'kde4-config --version'
+    else:
+        return "not available"
 
     command = desktop.split()
 
